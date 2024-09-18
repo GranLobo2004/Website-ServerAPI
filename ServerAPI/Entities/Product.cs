@@ -1,10 +1,18 @@
-﻿namespace ServerAPI.Entities;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-public class Product
+namespace ServerAPI.Entities
 {
-    public int Id { get; set; }
-    public string? Name { get; set; }
-    public string? Description { get; set; }
-    public int Price { get; set; }
-    public LinkedList<string> Tags { get; set; }
+    public class Product
+    {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int Id { get; set; }
+
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public decimal Price { get; set; }
+        public string Image { get; set; }
+        public List<string> Tags { get; set; } = new List<string>();
+    }
 }
