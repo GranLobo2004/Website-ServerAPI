@@ -25,7 +25,18 @@ builder.Services.AddFastEndpoints().SwaggerDocument()
     .AddAuthenticationJwtBearer(s => s.SigningKey = "The secret used to sign tokens")
     .AddAuthorization();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        builder => builder.AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader());
+});
+
+
 var app = builder.Build();
+
+app.UseCors("AllowAll");
 
 app.MapGet("/", () => "Hello World!");
 app.UseFastEndpoints().UseSwaggerGen().UseAuthentication().UseAuthorization();

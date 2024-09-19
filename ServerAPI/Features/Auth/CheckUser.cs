@@ -29,6 +29,7 @@ namespace ServerAPI.Features
         public override async Task HandleAsync(UserRequest req, CancellationToken ct)
         {
             var user = req.User;
+            user.Id = 0;
             _context.Users.Add(user);
             await _context.SaveChangesAsync(ct);
             await SendAsync(new UserResponse(true, "Usuario registrado correctamente"), 200, ct);

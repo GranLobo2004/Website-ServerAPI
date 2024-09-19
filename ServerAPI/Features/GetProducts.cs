@@ -32,17 +32,24 @@ namespace ServerAPI.Features
 
         public override async Task HandleAsync(CancellationToken ct)
         {
-            var products = await _context.Products.ToListAsync(ct);
-            var response = products.Select(p => new GetProductsResponse
+            try
             {
-                Id = p.Id,
-                Name = p.Name,
-                Price = p.Price,
-                Image = p.Image,
-                Tags = p.Tags
-            }).ToList();
+                var products = await _context.Products.ToListAsync(ct);
+                var response = products.Select(p => new GetProductsResponse
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    Price = p.Price,
+                    Image = p.Image,
+                    Tags = p.Tags
+                }).ToList();
 
-            await SendAsync(response, 200, ct);
+                await SendAsync(response, 200, ct);
+            }
+            catch (Exception ex)
+            {
+                // Manejar el error y enviar una respuesta de error
+            }
         }
     }
 }
