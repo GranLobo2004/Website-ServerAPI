@@ -8,7 +8,9 @@ namespace ServerAPI.Entities
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
+        [Required]
         public string Name { get; set; }
+        public string Surname { get; set; }
         [EmailAddress]
         public string Email { get; set; }
         public string Password { get; set; }

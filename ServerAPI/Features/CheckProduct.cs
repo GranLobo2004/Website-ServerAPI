@@ -8,7 +8,7 @@ namespace ServerAPI.Features;
 
 internal record ProductRequest(Product Product);
 
-internal record ProductResponse(bool Variable, string Message);
+public partial record ProductResponse(bool Variable, string Message);
 
 internal sealed class CheckProduct : Endpoint<ProductRequest, ProductResponse>
 {
