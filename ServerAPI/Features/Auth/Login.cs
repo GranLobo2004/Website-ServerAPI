@@ -1,47 +1,60 @@
-﻿using System.Security.Claims;
-using FastEndpoints;
-using Microsoft.AspNetCore.Identity;
+﻿using FastEndpoints;
+using FluentValidation;
+using Microsoft.EntityFrameworkCore;
+using ServerAPI.Data;
+using ServerAPI.Entities;
 
 namespace ServerAPI.Features.Auth;
 
 public record LoginRequest(string Email, string Password);
 
-public class Login : Endpoint<LoginRequest>
+public record LoginResponse(bool Success, User user);
+
+public class Login : Endpoint<LoginRequest, LoginResponse>
 {
-    private readonly UserManager<IdentityUser> _userManager;
-    
-    private readonly SignInManager<IdentityUser> _signInManager;
-    
-    public override void Configure()
+    private readonly DataBase _context;
+    public Login(DataBase context)
     {
-        Post("auth/login");
-        AllowAnonymous();
-        
+        _context = context;
     }
 
+    public override void Configure()
+    {
+        Post("/login/{Email}");
+        AllowAnonymous();
+        Validator<LoginValidator>();
+    }
+    
     public override async Task HandleAsync(LoginRequest req, CancellationToken ct)
     {
-        var user = await _userManager.FindByEmailAsync(req.Email);
-        if (user == null)
+        try
         {
-            await SendUnauthorizedAsync(ct);
-            return;
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == req.Email & u.Password == req.Password,
+                ct);
+            await SendAsync(new LoginResponse(true, user), 200, ct);
         }
-        var result = await _signInManager.PasswordSignInAsync(user, req.Password, true, false);
-
-        if (!result.Succeeded)
+        catch (Exception ex)
         {
-            await SendUnauthorizedAsync(ct);
-            return;
+            await SendAsync(new LoginResponse(false, null), 400, ct);
         }
-        
-        var roles = await _userManager.GetRolesAsync(user);
+    }
+}
 
-        var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.UserData, user.Id),
-        };
-        claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+public class LoginValidator : Validator<LoginRequest>
+{
+    public LoginValidator()
+    {
+        RuleFor(r => r.Email)
+            .NotEmpty()
+            .NotNull()
+            .NotEqual("")
+            .NotEqual("=")
+            .EmailAddress()
+            .WithMessage("Wrong format email");
+        RuleFor(r=>r.Password)
+            .NotEmpty()
+            .NotNull()
+            .NotEqual("=")
+            .WithMessage("Wrong password");
     }
 }
