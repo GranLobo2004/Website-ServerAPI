@@ -72,6 +72,9 @@ namespace ServerAPI.Features
                 .WithMessage("User type required")
                 .Must(type => new[] { "customer", "moderator", "admin" }.Contains(type))
                 .WithMessage("Invalid user type.");
+            RuleFor(u => u.User.Image)
+                .NotEmpty()
+                .NotNull();
         }
     }
 }

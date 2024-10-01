@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ServerAPI.Data;
 
@@ -10,9 +11,11 @@ using ServerAPI.Data;
 namespace ServerAPI.Migrations
 {
     [DbContext(typeof(DataBase))]
-    partial class DataBaseModelSnapshot : ModelSnapshot
+    [Migration("20240924122138_deleteCommentsTable")]
+    partial class deleteCommentsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.8");
@@ -21,6 +24,9 @@ namespace ServerAPI.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("CommentId")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("Date")
@@ -39,9 +45,11 @@ namespace ServerAPI.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CommentId");
+
                     b.HasIndex("ProductId");
 
-                    b.ToTable("Comments");
+                    b.ToTable("Comment");
                 });
 
             modelBuilder.Entity("ServerAPI.Entities.Product", b =>
@@ -50,10 +58,6 @@ namespace ServerAPI.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Characteristics")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -61,9 +65,6 @@ namespace ServerAPI.Migrations
                     b.Property<string>("Image")
                         .IsRequired()
                         .HasColumnType("TEXT");
-
-                    b.Property<int>("NRatings")
-                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -94,10 +95,6 @@ namespace ServerAPI.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Image")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -124,11 +121,22 @@ namespace ServerAPI.Migrations
 
             modelBuilder.Entity("ServerAPI.Entities.Comment", b =>
                 {
-                    b.HasOne("ServerAPI.Entities.Product", null)
+                    b.HasOne("ServerAPI.Entities.Comment", null)
+                        .WithMany("Comments")
+                        .HasForeignKey("CommentId");
+
+                    b.HasOne("ServerAPI.Entities.Product", "Product")
                         .WithMany("Comments")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("ServerAPI.Entities.Comment", b =>
+                {
+                    b.Navigation("Comments");
                 });
 
             modelBuilder.Entity("ServerAPI.Entities.Product", b =>

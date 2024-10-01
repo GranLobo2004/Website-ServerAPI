@@ -3,6 +3,7 @@ using FastEndpoints;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using ServerAPI.Data;
+using Microsoft.Extensions.Logging;
 
 namespace ServerAPI.Features;
 
@@ -13,10 +14,12 @@ public partial record ProductResponse(bool Variable, string Message);
 internal sealed class CheckProduct : Endpoint<ProductRequest, ProductResponse>
 {
     private readonly DataBase _context;
+    private readonly ILogger<CheckProduct> _logger;
 
-    public CheckProduct(DataBase context)
+    public CheckProduct(DataBase context, ILogger<CheckProduct> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
     public override void Configure()
@@ -29,11 +32,30 @@ internal sealed class CheckProduct : Endpoint<ProductRequest, ProductResponse>
     public override async Task HandleAsync(ProductRequest req, CancellationToken ct)
     {
         var product = req.Product;
-        product.Id = 0;
 
-        _context.Products.Add(product);
-        await _context.SaveChangesAsync(ct);
-        await SendAsync(new ProductResponse(true, "Producto registrado correctamente"), 200, ct);
+        // Realizar validaciones adicionales si es necesario
+        if (product == null)
+        {
+            await SendAsync(new ProductResponse(false, "Invalid product data"), 400, ct);
+            return;
+        }
+
+        try
+        {
+            product.Id = 0;
+            product.Comments = new List<Comment>();
+            product.Rating = 0; // Asegurarse de que el rating sea 0
+            product.NRatings = 0;
+
+            _context.Products.Add(product);
+            await _context.SaveChangesAsync(ct);
+            await SendAsync(new ProductResponse(true, "Producto registrado correctamente"), 200, ct);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating product.");
+            await SendAsync(new ProductResponse(false, "Internal server error"), 500, ct);
+        }
     }
 }
 
@@ -44,7 +66,6 @@ internal class ProductValidator : Validator<ProductRequest>
         RuleFor(p => p.Product.Id)
             .Equal(0)
             .WithMessage("ID should not be provided and will be generated automatically.");
-
         RuleFor(p => p.Product.Name)
             .NotEmpty()
             .WithMessage("Name required for the product")
@@ -56,6 +77,11 @@ internal class ProductValidator : Validator<ProductRequest>
             .WithMessage("Description required for the product")
             .NotNull()
             .WithMessage("Description required");
+        RuleFor(p => p.Product.Characteristics)
+            .NotEmpty()
+            .WithMessage("Characteristic required for the product")
+            .NotNull()
+            .WithMessage("Characteristic required");
 
         RuleFor(p => p.Product.Price)
             .NotEmpty()

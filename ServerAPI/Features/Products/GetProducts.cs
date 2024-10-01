@@ -4,18 +4,8 @@ using ServerAPI.Data;
 
 namespace ServerAPI.Features
 {
-    public class GetProductsResponse
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public decimal Price { get; set; }
-        
-        public string Image { get; set; }
-        
-        public List<string> Tags { get; set; }
-    }
-    
-    public class GetProducts : EndpointWithoutRequest<List<GetProductsResponse>>
+
+    public class GetProducts : EndpointWithoutRequest<List<GetProductResponse>>
     {
         private readonly DataBase _context;
 
@@ -26,7 +16,7 @@ namespace ServerAPI.Features
 
         public override void Configure()
         {
-            Get("/product");
+            Get("/products");
             AllowAnonymous(); // Cambia esto según tu necesidad de autenticación
         }
 
@@ -35,22 +25,21 @@ namespace ServerAPI.Features
             try
             {
                 var products = await _context.Products.ToListAsync(ct);
-                var response = products.Select(p => new GetProductsResponse
+                var response = products.Select(p => new GetProductResponse
                 {
                     Id = p.Id,
                     Name = p.Name,
                     Price = p.Price,
                     Image = p.Image,
-                    Tags = p.Tags
+                    Tags = p.Tags,
                 }).ToList();
 
                 await SendAsync(response, 200, ct);
             }
             catch (Exception ex)
             {
-                // Manejar el error y enviar una respuesta de error
+                await SendErrorsAsync(500, ct);
             }
-            
         }
     }
 }
