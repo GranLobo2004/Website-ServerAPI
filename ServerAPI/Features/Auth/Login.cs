@@ -8,7 +8,7 @@ namespace ServerAPI.Features.Auth;
 
 public record LoginRequest(string Email, string Password);
 
-public record LoginResponse(bool Success, User user);
+public record LoginResponse(string message, User user);
 
 public class Login : Endpoint<LoginRequest, LoginResponse>
 {
@@ -20,7 +20,7 @@ public class Login : Endpoint<LoginRequest, LoginResponse>
 
     public override void Configure()
     {
-        Post("/login/{Email}");
+        Post("/login");
         AllowAnonymous();
         Validator<LoginValidator>();
     }
@@ -29,13 +29,22 @@ public class Login : Endpoint<LoginRequest, LoginResponse>
     {
         try
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == req.Email & u.Password == req.Password,
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == req.Email,
                 ct);
-            await SendAsync(new LoginResponse(true, user), 200, ct);
+            if (user.Password == req.Password)
+            {
+                user.LastActivity = DateTime.Now;
+                _context.Users.Update(user);
+                await SendAsync(new LoginResponse("Log in successful", user), 200, ct);
+            }
+            else
+            {
+                await SendAsync(new LoginResponse("Password incorrect", default), 400, ct);
+            }
         }
         catch (Exception ex)
         {
-            await SendAsync(new LoginResponse(false, null), 400, ct);
+            await SendAsync(new LoginResponse("An error ocurred, check the email and the password.", null), 400, ct);
         }
     }
 }

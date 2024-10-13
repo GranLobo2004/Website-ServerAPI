@@ -11,10 +11,7 @@ public class NewRatingRequest
     public int Rating { get; set; }
 }
 
-public class NewRatingResponse(string message)
-{
-    public string? message { get; set; }
-}
+public class NewRatingResponse(string message);
 
 public class UpdateRatings: Endpoint<NewRatingRequest, NewRatingResponse>
 {
@@ -27,7 +24,7 @@ public class UpdateRatings: Endpoint<NewRatingRequest, NewRatingResponse>
 
     public override void Configure()
     {
-        Post("/ratings/{ProductId}");  // Asegúrate de que la ruta sea correcta
+        Post("update/ratings");  // Asegúrate de que la ruta sea correcta
         AllowAnonymous();
         Validator<RatingValidator>();
     }

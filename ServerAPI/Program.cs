@@ -38,6 +38,6 @@ var app = builder.Build();
 
 app.UseCors("AllowAll");
 
-app.MapGet("/", () => "Hello World!");
+app.MapGet("/", () => "Welcome to the Website API!");
 app.UseFastEndpoints().UseSwaggerGen().UseAuthentication().UseAuthorization();
 app.Run();
