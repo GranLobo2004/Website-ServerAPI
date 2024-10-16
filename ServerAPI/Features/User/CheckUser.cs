@@ -3,6 +3,7 @@ using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using ServerAPI.Data;
 using ServerAPI.Entities;
+using BCrypt.Net;
 
 namespace ServerAPI.Features.Auth
 {
@@ -31,7 +32,7 @@ namespace ServerAPI.Features.Auth
             var user = req.User;
             user.Id = 0; // Aseguramos que el ID sea 0 al crear un nuevo usuario
             user.Type = "customer"; // Asignar tipo por defecto
-
+            user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
             // Verificar si el email ya está registrado
             var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == user.Email);
             if (existingUser != null)

@@ -31,7 +31,7 @@ public class Login : Endpoint<LoginRequest, LoginResponse>
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == req.Email,
                 ct);
-            if (user.Password == req.Password)
+            if (BCrypt.Net.BCrypt.Verify(req.Password, user.Password))
             {
                 user.LastActivity = DateTime.Now;
                 _context.Users.Update(user);
