@@ -1,10 +1,11 @@
 ﻿using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 using ServerAPI.Data;
+using ServerAPI.Entities;
 
 namespace ServerAPI.Features.Auth;
 
-public class GetUsers:EndpointWithoutRequest<List<GetUserResponse>>
+public class GetUsers:EndpointWithoutRequest<List<User>>
 {
     private readonly DataBase _context;
 
@@ -24,17 +25,14 @@ public class GetUsers:EndpointWithoutRequest<List<GetUserResponse>>
         try
         {
             var users = await _context.Users.ToListAsync();
-            var response = users.Select(u => new GetUserResponse
-            {
-                User = u
-            }).ToList();
-            
-            await SendAsync(response, 200, ct);
-
+        
+            // Enviar directamente la lista de usuarios
+            await SendAsync(users, 200, ct);
         }
         catch (Exception e)
         {
             await SendErrorsAsync(500, ct);
         }
     }
+
 }

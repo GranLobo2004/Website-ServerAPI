@@ -1,5 +1,6 @@
 ﻿using FastEndpoints;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using Namotion.Reflection;
 using ServerAPI.Data;
 using ServerAPI.Entities;
@@ -8,8 +9,9 @@ namespace ServerAPI.Features;
 
 public class CommentRequest
 {
-    public Comment Comment { get; set; }
-    public int Id { get; set; }  // 'Id' sigue la convención PascalCase
+    public string Username { get; set; }
+    public string content { get; set; }
+    public int productId { get; set; }
 }
 
 public partial record SavedComment(string Message);
@@ -25,17 +27,31 @@ public class CheckComment : Endpoint<CommentRequest, SavedComment>
 
     public override void Configure()
     {
-        Post("/comment/{id}");  // Asegúrate de que la ruta sea correcta
+        Post("/comment");  // Asegúrate de que la ruta sea correcta
         AllowAnonymous();
         Validator<CommentValidator>();
     }
 
     public override async Task HandleAsync(CommentRequest req, CancellationToken ct)
     {
-        var comment = req.Comment;
-        comment.Id = 0;  // Asegúrate de que el ID sea 0 para que se genere automáticamente
-        comment.ProductId = req.Id;  // Establece ProductId desde el id de la URL
+        Console.WriteLine("Saving comment...");
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == req.Username);
+        if (user == null)
+        {
+            await SendAsync(new SavedComment("User not found or Username invalid"), 404, ct);
+        }
 
+        var comments = await _context.Comments.Where(c => c.ProductId == req.productId).ToListAsync();
+        
+        var comment = new Comment()
+        {
+            Id = comments.Count + 1,
+            Text = req.content,
+            Date = DateTime.Today,
+            ProductId = req.productId,
+            Username = user.Username,
+            UserImage = user.Image
+        };
         _context.Comments.Add(comment); 
         await _context.SaveChangesAsync(ct);
         await SendAsync(new SavedComment("Comment saved"), 200, ct);
@@ -46,21 +62,18 @@ internal class CommentValidator : Validator<CommentRequest>
 {
     public CommentValidator()
     {
-        RuleFor(c => c.Comment.Id)
-            .Equal(0)
-            .WithMessage("ID should not be provided and will be generated automatically.");
-
-        RuleFor(c => c.Comment.User)
+        RuleFor(c => c.Username)
             .NotEmpty()
             .WithMessage("User name required for the comment");
 
-        RuleFor(c => c.Comment.Text)
+        RuleFor(c => c.content)
             .NotEmpty()
             .WithMessage("Text required for the comment");
-
-        RuleFor(c => c.Comment.Date)
-            .NotEmpty()
-            .WithMessage("Date required for the comment");
         // Puedes quitar la comparación de la fecha, a menos que sea necesaria
+        RuleFor(c => c.productId)
+            .NotEmpty()
+            .NotNull()
+            .NotEqual(0)
+            .WithMessage("ProductId is required and must not be 0");
     }
 }

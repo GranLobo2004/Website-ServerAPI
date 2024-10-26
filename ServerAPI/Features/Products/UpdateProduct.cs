@@ -1,71 +1,59 @@
-﻿using ServerAPI.Entities;
-using FastEndpoints;
+﻿using FastEndpoints;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using ServerAPI.Data;
-using Microsoft.Extensions.Logging;
 
-namespace ServerAPI.Features;
+namespace ServerAPI.Features.Updates;
 
-internal record ProductRequest(Product Product);
-
-public partial record ProductResponse(bool Variable, string Message, int ProductId);
-
-internal sealed class CheckProduct : Endpoint<ProductRequest, ProductResponse>
+internal sealed class UpdateProduct : Endpoint<ProductRequest, ProductResponse>
 {
     private readonly DataBase _context;
-    private readonly ILogger<CheckProduct> _logger;
 
-    public CheckProduct(DataBase context, ILogger<CheckProduct> logger)
+    public UpdateProduct(DataBase context)
     {
         _context = context;
-        _logger = logger;
     }
 
     public override void Configure()
     {
-        Post("/product");
+        Post("/update/product");
         AllowAnonymous();
-        Validator<ProductValidator>();
+        Validator<UpdateProductValidator>();
     }
 
     public override async Task HandleAsync(ProductRequest req, CancellationToken ct)
     {
         var product = req.Product;
         // Realizar validaciones adicionales si es necesario
-        if (product == null)
-        {
-            await SendAsync(new ProductResponse(false, "Invalid product data", 0), 400, ct);
-            return;
-        }
 
         try
-        {
-            product.Id = 0;
-            product.Comments = new List<Comment>();
-            product.Rating = 0; // Asegurarse de que el rating sea 0
-            product.NRatings = 0;
-            _context.Products.Add(product);
-            
+        { 
+            var savedProduct = await _context.Products.FirstOrDefaultAsync(p => p.Id == product.Id, ct);
+            if (savedProduct == null)
+            {
+                await SendAsync(new ProductResponse(false, "Product does not exist in database", 0), 400, ct);
+
+            }
+            savedProduct.Characteristics = product.Characteristics;
+            savedProduct.Name = product.Name;
+            savedProduct.Price = product.Price;
+            savedProduct.Description = product.Description;
+            savedProduct.Tags = product.Tags;
+            _context.Products.Update(savedProduct);
             await _context.SaveChangesAsync(ct);
-            var Product = _context.Products.OrderByDescending(p => p.Id).FirstOrDefault();
-            await SendAsync(new ProductResponse(true, "Producto registrado correctamente", Product.Id), 200, ct);
+            await SendAsync(new ProductResponse(true, "Product updated", savedProduct.Id), 200, ct);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating product.");
             await SendAsync(new ProductResponse(false, "Internal server error", 0), 500, ct);
         }
     }
 }
 
-internal class ProductValidator : Validator<ProductRequest>
+internal class UpdateProductValidator : Validator<ProductRequest>
 {
-    public ProductValidator()
+    public UpdateProductValidator()
     {
-        RuleFor(p => p.Product.Id)
-            .Equal(0)
-            .WithMessage("ID should not be provided and will be generated automatically.");
         RuleFor(p => p.Product.Name)
             .NotEmpty()
             .WithMessage("Name required for the product")

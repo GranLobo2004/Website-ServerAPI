@@ -31,7 +31,7 @@ namespace ServerAPI.Features.Auth
         {
             var user = req.User;
             user.Id = 0; // Aseguramos que el ID sea 0 al crear un nuevo usuario
-            user.Type = "customer"; // Asignar tipo por defecto
+            user.Type = "Customer"; // Asignar tipo por defecto
             user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
             // Verificar si el email ya está registrado
             var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == user.Email);
@@ -70,6 +70,10 @@ namespace ServerAPI.Features.Auth
                 .NotEmpty().WithMessage("Email required for the user")
                 .EmailAddress().WithMessage("Invalid email format");
 
+            RuleFor(u => u.User.Username)
+                .NotEmpty().WithMessage("Username required for the user")
+                .NotNull().WithMessage("Username can not be null");
+            
             RuleFor(u => u.User.Password)
                 .NotEmpty().WithMessage("Password required")
                 .MinimumLength(8).WithMessage("Password must be at least 8 characters");

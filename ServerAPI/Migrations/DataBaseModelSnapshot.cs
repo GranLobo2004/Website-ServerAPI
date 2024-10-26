@@ -15,7 +15,7 @@ namespace ServerAPI.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "8.0.8");
+            modelBuilder.HasAnnotation("ProductVersion", "8.0.10");
 
             modelBuilder.Entity("ServerAPI.Entities.Comment", b =>
                 {
@@ -23,25 +23,29 @@ namespace ServerAPI.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("TEXT");
-
                     b.Property<int>("ProductId")
                         .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Text")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("User")
+                    b.Property<string>("UserImage")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.HasKey("Id");
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id", "ProductId");
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("Comments");
+                    b.ToTable("Comments", (string)null);
                 });
 
             modelBuilder.Entity("ServerAPI.Entities.Order", b =>
@@ -62,7 +66,7 @@ namespace ServerAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Orders");
+                    b.ToTable("Orders", (string)null);
                 });
 
             modelBuilder.Entity("ServerAPI.Entities.Product", b =>
@@ -102,7 +106,7 @@ namespace ServerAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Products");
+                    b.ToTable("Products", (string)null);
                 });
 
             modelBuilder.Entity("ServerAPI.Entities.ProductOrderUser", b =>
@@ -122,7 +126,7 @@ namespace ServerAPI.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ProductOrders");
+                    b.ToTable("ProductOrders", (string)null);
                 });
 
             modelBuilder.Entity("ServerAPI.Entities.User", b =>
@@ -158,12 +162,19 @@ namespace ServerAPI.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.ToTable("Users");
+                    b.HasIndex("Username")
+                        .IsUnique();
+
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("ServerAPI.Entities.Comment", b =>

@@ -1,4 +1,6 @@
-﻿namespace ServerAPI.Features
+﻿using ServerAPI.Entities;
+
+namespace ServerAPI.Features
 {
     using FastEndpoints;
     using Microsoft.EntityFrameworkCore;
@@ -16,24 +18,12 @@
 
     public class CommentResponse
     {
-        public int Id { get; set; }
-        public string User { get; set; }
-        public string Text { get; set; }
-        public DateTime Date { get; set; }
+        public Comment Comment { get; set; }
     }
     
     public class GetProductResponse
     {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public decimal Price { get; set; }
-        public string Description { get; set; }
-        public string Characteristics { get; set; }
-        public string Image { get; set; }
-        public List<string> Tags { get; set; }
-        public List<CommentResponse> Comments { get; set; }
-        public float Rating { get; set; }
-        public int NRatings { get; set; }
+        public Product Product { get; set; }
     }
 
     public class GetProduct : Endpoint<GetProductRequest, GetProductResponse>
@@ -56,33 +46,26 @@
             try
             {
                 var product = await _context.Products
-                    .Include(p => p.Comments)
                     .FirstOrDefaultAsync(p => p.Id == req.Id, ct);
-
+                var comments = await _context.Comments.Where(c => c.ProductId == product.Id).ToListAsync(ct);
                 if (product == null)
                 {
                     await SendNotFoundAsync(ct);
                     return;
                 }
 
-                var response = new GetProductResponse
+                if (comments == null)
                 {
-                    Id = product.Id,
-                    Name = product.Name,
-                    Price = product.Price,
-                    Image = product.Image,
-                    Tags = product.Tags,
-                    Characteristics = product.Characteristics,
-                    Description = product.Description,
-                    Rating = product.Rating,
-                    NRatings = product.NRatings,
-                    Comments = product.Comments.Select(c => new CommentResponse
-                    {
-                        Id = c.Id,
-                        User = c.User,
-                        Text = c.Text,
-                        Date = c.Date
-                    }).ToList()
+                    product.Comments = new List<Comment>();
+                }
+                else
+                {
+                    product.Comments = comments;
+                }
+                
+                var response = new GetProductResponse()
+                {
+                    Product = product
                 };
 
                 await SendAsync(response, 200, ct);

@@ -75,11 +75,7 @@ public class GetProducts: Endpoint<GetProductsRequest, List<GetProductResponse>>
             }
             var response = products.Select(p=>new GetProductResponse
             {
-                Id = p.Id,
-                Name = p.Name,
-                Price = p.Price,
-                Image = p.Image,
-                Tags = p.Tags,
+                Product = p
             }).ToList();
             
             await SendAsync(response, 200, ct);

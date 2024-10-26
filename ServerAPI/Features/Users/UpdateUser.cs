@@ -1,7 +1,10 @@
 ﻿using FastEndpoints;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using ServerAPI.Data;
+using ServerAPI.Entities;
 using ServerAPI.Features.Auth;
+using ServerAPI.Migrations;
 
 namespace ServerAPI.Features.Updates;
 
@@ -15,7 +18,7 @@ public class UpdateUser:Endpoint<UserRequest,UserResponse>
     }
     public override void Configure()
     {
-        Post("/update/user");
+        Post("/user/update");
         AllowAnonymous();
         Validator<UpdateUserValidator>();
     }
@@ -27,7 +30,7 @@ public class UpdateUser:Endpoint<UserRequest,UserResponse>
             user.LastActivity=DateTime.Now;
             _context.Users.Update(user);
             await _context.SaveChangesAsync(ct);
-            await SendAsync(new UserResponse(true, "Usuario registrado correctamente"), 200, ct);
+            await SendAsync(new UserResponse(true, "User updated"), 200, ct);
         }
         catch (Exception e)
         {
@@ -64,7 +67,7 @@ public class UpdateUser:Endpoint<UserRequest,UserResponse>
                 .WithMessage("User type required")
                 .NotNull()
                 .WithMessage("User type required")
-                .Must(type => new[] { "customer", "moderator", "admin" }.Contains(type))
+                .Must(type => new[] { "Customer", "Moderator", "Admin" }.Contains(type))
                 .WithMessage("Invalid user type.");
             RuleFor(u => u.User.Image)
                 .NotEmpty()

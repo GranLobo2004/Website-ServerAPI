@@ -6,9 +6,9 @@ using ServerAPI.Entities;
 
 namespace ServerAPI.Features.Auth;
 
-public record LoginRequest(string Email, string Password);
+public record LoginRequest(string Email_Username, string Password);
 
-public record LoginResponse(string message, User user);
+public record LoginResponse(string Message, User User);
 
 public class Login : Endpoint<LoginRequest, LoginResponse>
 {
@@ -27,24 +27,22 @@ public class Login : Endpoint<LoginRequest, LoginResponse>
     
     public override async Task HandleAsync(LoginRequest req, CancellationToken ct)
     {
-        try
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == req.Email_Username || u.Username == req.Email_Username,
+            ct);
+        if (user == null)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == req.Email,
-                ct);
-            if (BCrypt.Net.BCrypt.Verify(req.Password, user.Password))
-            {
-                user.LastActivity = DateTime.Now;
-                _context.Users.Update(user);
-                await SendAsync(new LoginResponse("Log in successful", user), 200, ct);
-            }
-            else
-            {
-                await SendAsync(new LoginResponse("Password incorrect", default), 400, ct);
-            }
+            await SendAsync(new LoginResponse("Account not found", null), 404, ct);
         }
-        catch (Exception ex)
+        
+        if (BCrypt.Net.BCrypt.Verify(req.Password, user.Password))
         {
-            await SendAsync(new LoginResponse("An error ocurred, check the email and the password.", null), 400, ct);
+            user.LastActivity = DateTime.Now;
+            _context.Users.Update(user);
+            await SendAsync(new LoginResponse("Log in successful", user), 200, ct);
+        }
+        else
+        {
+            await SendAsync(new LoginResponse("Password incorrect", default), 400, ct);
         }
     }
 }
@@ -53,13 +51,12 @@ public class LoginValidator : Validator<LoginRequest>
 {
     public LoginValidator()
     {
-        RuleFor(r => r.Email)
+        RuleFor(r => r.Email_Username)
             .NotEmpty()
             .NotNull()
             .NotEqual("")
             .NotEqual("=")
-            .EmailAddress()
-            .WithMessage("Wrong format email");
+            .WithMessage("Wrong data to find user");
         RuleFor(r=>r.Password)
             .NotEmpty()
             .NotNull()
