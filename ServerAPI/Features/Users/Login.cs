@@ -27,6 +27,7 @@ public class Login : Endpoint<LoginRequest, LoginResponse>
     
     public override async Task HandleAsync(LoginRequest req, CancellationToken ct)
     {
+        Console.WriteLine("Login Request");
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == req.Email_Username || u.Username == req.Email_Username,
             ct);
         if (user == null)
@@ -38,6 +39,7 @@ public class Login : Endpoint<LoginRequest, LoginResponse>
         {
             user.LastActivity = DateTime.Now;
             _context.Users.Update(user);
+            Console.WriteLine("Successfully logged in");
             await SendAsync(new LoginResponse("Log in successful", user), 200, ct);
         }
         else

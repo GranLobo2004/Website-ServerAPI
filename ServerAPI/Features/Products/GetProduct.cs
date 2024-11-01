@@ -10,23 +10,13 @@ namespace ServerAPI.Features
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
-
-    public class GetProductRequest
-    {
-        public int Id { get; set; }
-    }
-
-    public class CommentResponse
-    {
-        public Comment Comment { get; set; }
-    }
     
     public class GetProductResponse
     {
         public Product Product { get; set; }
     }
 
-    public class GetProduct : Endpoint<GetProductRequest, GetProductResponse>
+    public class GetProduct : EndpointWithoutRequest< GetProductResponse>
     {
         private readonly DataBase _context;
 
@@ -41,26 +31,17 @@ namespace ServerAPI.Features
             AllowAnonymous(); // Cambia esto según tu necesidad de autenticación
         }
 
-        public override async Task HandleAsync(GetProductRequest req, CancellationToken ct)
+        public override async Task HandleAsync(CancellationToken ct)
         {
             try
             {
+                var id = Route<int>("id");
                 var product = await _context.Products
-                    .FirstOrDefaultAsync(p => p.Id == req.Id, ct);
-                var comments = await _context.Comments.Where(c => c.ProductId == product.Id).ToListAsync(ct);
+                    .FirstOrDefaultAsync(p => p.Id == id, ct);
                 if (product == null)
                 {
                     await SendNotFoundAsync(ct);
                     return;
-                }
-
-                if (comments == null)
-                {
-                    product.Comments = new List<Comment>();
-                }
-                else
-                {
-                    product.Comments = comments;
                 }
                 
                 var response = new GetProductResponse()

@@ -20,13 +20,13 @@ namespace ServerAPI.Migrations
             modelBuilder.Entity("ServerAPI.Entities.Comment", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("ProductId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime>("Date")
+                    b.Property<string>("Date")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Text")
@@ -43,9 +43,7 @@ namespace ServerAPI.Migrations
 
                     b.HasKey("Id", "ProductId");
 
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("Comments", (string)null);
+                    b.ToTable("Comments");
                 });
 
             modelBuilder.Entity("ServerAPI.Entities.Order", b =>
@@ -66,7 +64,7 @@ namespace ServerAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Orders", (string)null);
+                    b.ToTable("Orders");
                 });
 
             modelBuilder.Entity("ServerAPI.Entities.Product", b =>
@@ -106,7 +104,7 @@ namespace ServerAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Products", (string)null);
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("ServerAPI.Entities.ProductOrderUser", b =>
@@ -126,7 +124,7 @@ namespace ServerAPI.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ProductOrders", (string)null);
+                    b.ToTable("ProductOrders");
                 });
 
             modelBuilder.Entity("ServerAPI.Entities.User", b =>
@@ -174,16 +172,7 @@ namespace ServerAPI.Migrations
                     b.HasIndex("Username")
                         .IsUnique();
 
-                    b.ToTable("Users", (string)null);
-                });
-
-            modelBuilder.Entity("ServerAPI.Entities.Comment", b =>
-                {
-                    b.HasOne("ServerAPI.Entities.Product", null)
-                        .WithMany("Comments")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("ServerAPI.Entities.ProductOrderUser", b =>
@@ -205,11 +194,6 @@ namespace ServerAPI.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("ServerAPI.Entities.Product", b =>
-                {
-                    b.Navigation("Comments");
                 });
 #pragma warning restore 612, 618
         }

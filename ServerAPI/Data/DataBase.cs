@@ -33,12 +33,6 @@ namespace ServerAPI.Data
                 .HasIndex(u => u.Username)
                 .IsUnique();
 
-            modelBuilder.Entity<Product>()
-                .HasMany(p => p.Comments)
-                .WithOne()
-                .HasForeignKey(c => c.ProductId)
-                .OnDelete(DeleteBehavior.Cascade);
-
             modelBuilder.Entity<Comment>()
                 .HasKey(c => new{c.Id, c.ProductId});
 

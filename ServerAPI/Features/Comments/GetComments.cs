@@ -5,12 +5,7 @@ using ServerAPI.Entities;
 
 namespace ServerAPI.Features;
 
-public class GetCommentsRequest
-{
-    public int ProductId { get; set; }
-}
-
-public class GetComments : Endpoint<GetCommentsRequest, List<Comment>>
+public class GetComments : EndpointWithoutRequest<List<Comment>>
 {
     private readonly DataBase _context;
 
@@ -25,22 +20,20 @@ public class GetComments : Endpoint<GetCommentsRequest, List<Comment>>
         AllowAnonymous(); // Cambia esto según tu necesidad de autenticación
     }
 
-    public async Task HandleAsync(GetProductRequest req, CancellationToken ct)
+    public override async Task HandleAsync(CancellationToken ct)
     {
+        var id = Route<int>("id");
         try
         {
-            var comments = await _context.Comments
-                .Where(c => c.ProductId == req.Id)
-                .ToListAsync(ct);
+            var  comments= await _context.Comments.Where(c => c.ProductId == id).ToListAsync();
 
-            // Verifica si la lista está vacía
-            if (comments == null || !comments.Any())
+            if (comments.Count == 0)
             {
-                await SendNotFoundAsync(ct);
-                return;
+                await SendAsync([], 200, ct);
             }
 
-            await SendAsync(comments, 200, ct);
+            List<Comment> response = comments.AsEnumerable().Reverse().ToList();
+            await SendAsync(response, 200, ct);
         }
         catch (Exception ex)
         {

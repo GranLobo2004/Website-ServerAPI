@@ -42,7 +42,6 @@ internal sealed class CheckProduct : Endpoint<ProductRequest, ProductResponse>
         try
         {
             product.Id = 0;
-            product.Comments = new List<Comment>();
             product.Rating = 0; // Asegurarse de que el rating sea 0
             product.NRatings = 0;
             _context.Products.Add(product);

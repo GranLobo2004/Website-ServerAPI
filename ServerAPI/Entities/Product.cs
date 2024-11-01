@@ -19,6 +19,5 @@ namespace ServerAPI.Entities
         public float Rating { get; set; }
         
         public int NRatings { get; set; }
-        public List<Comment> Comments { get; set; } = new List<Comment>();
     }
 }

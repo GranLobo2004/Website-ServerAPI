@@ -1,7 +1,6 @@
 ﻿using FastEndpoints;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
-using Namotion.Reflection;
 using ServerAPI.Data;
 using ServerAPI.Entities;
 
@@ -47,7 +46,7 @@ public class CheckComment : Endpoint<CommentRequest, SavedComment>
         {
             Id = comments.Count + 1,
             Text = req.content,
-            Date = DateTime.Today,
+            Date = DateTime.Today.ToString("yyyy/MM/dd"),
             ProductId = req.productId,
             Username = user.Username,
             UserImage = user.Image
