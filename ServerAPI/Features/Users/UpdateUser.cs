@@ -27,7 +27,8 @@ public class UpdateUser:Endpoint<UserRequest,UserResponse>
         try
         {
             var user = req.User;
-            user.LastActivity=DateTime.Now;
+            user.LastActivity = DateTime.Now;
+            user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
             _context.Users.Update(user);
             await _context.SaveChangesAsync(ct);
             await SendAsync(new UserResponse(true, "User updated"), 200, ct);

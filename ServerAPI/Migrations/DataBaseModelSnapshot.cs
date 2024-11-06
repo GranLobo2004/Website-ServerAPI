@@ -46,27 +46,6 @@ namespace ServerAPI.Migrations
                     b.ToTable("Comments");
                 });
 
-            modelBuilder.Entity("ServerAPI.Entities.Order", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("State")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<float>("Total")
-                        .HasColumnType("REAL");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Orders");
-                });
-
             modelBuilder.Entity("ServerAPI.Entities.Product", b =>
                 {
                     b.Property<int>("Id")
@@ -107,9 +86,9 @@ namespace ServerAPI.Migrations
                     b.ToTable("Products");
                 });
 
-            modelBuilder.Entity("ServerAPI.Entities.ProductOrderUser", b =>
+            modelBuilder.Entity("ServerAPI.Entities.ProductPurchaseUser", b =>
                 {
-                    b.Property<int>("OrderId")
+                    b.Property<int>("PurchaseId")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("ProductId")
@@ -118,13 +97,37 @@ namespace ServerAPI.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("OrderId", "ProductId", "UserId");
+                    b.Property<int>("Quantity")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("PurchaseId", "ProductId", "UserId");
 
                     b.HasIndex("ProductId");
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ProductOrders");
+                    b.ToTable("ProductPurchaseUsers");
+                });
+
+            modelBuilder.Entity("ServerAPI.Entities.Purchase", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("Total")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Purchases");
                 });
 
             modelBuilder.Entity("ServerAPI.Entities.User", b =>
@@ -175,17 +178,17 @@ namespace ServerAPI.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("ServerAPI.Entities.ProductOrderUser", b =>
+            modelBuilder.Entity("ServerAPI.Entities.ProductPurchaseUser", b =>
                 {
-                    b.HasOne("ServerAPI.Entities.Order", null)
-                        .WithMany()
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("ServerAPI.Entities.Product", null)
                         .WithMany()
                         .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ServerAPI.Entities.Purchase", null)
+                        .WithMany()
+                        .HasForeignKey("PurchaseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

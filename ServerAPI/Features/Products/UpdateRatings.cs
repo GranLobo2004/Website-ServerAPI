@@ -24,7 +24,7 @@ public class UpdateRatings: Endpoint<NewRatingRequest, NewRatingResponse>
 
     public override void Configure()
     {
-        Post("/update/ratings");  // Asegúrate de que la ruta sea correcta
+        Post("/ratings/update");  // Asegúrate de que la ruta sea correcta
         AllowAnonymous();
         Validator<RatingValidator>();
     }

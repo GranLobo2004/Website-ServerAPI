@@ -11,8 +11,8 @@ namespace ServerAPI.Data
         public DbSet<Product> Products { get; set; }
         public DbSet<Comment> Comments { get; set; }
         public DbSet<User> Users { get; set; }
-        public DbSet<Order> Orders { get; set; }
-        public DbSet<ProductOrderUser> ProductOrders { get; set; }
+        public DbSet<Purchase> Purchases { get; set; }
+        public DbSet<ProductPurchaseUser> ProductPurchaseUsers { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -36,23 +36,23 @@ namespace ServerAPI.Data
             modelBuilder.Entity<Comment>()
                 .HasKey(c => new{c.Id, c.ProductId});
 
-            modelBuilder.Entity<Order>()
+            modelBuilder.Entity<Purchase>()
                 .HasKey(o => o.Id); // Clave primaria
 
-            modelBuilder.Entity<ProductOrderUser>()
-                .HasKey(po => new { po.OrderId, po.ProductId, po.UserId }); // Clave primaria compuesta
+            modelBuilder.Entity<ProductPurchaseUser>()
+                .HasKey(po => new { po.PurchaseId, po.ProductId, po.UserId }); // Clave primaria compuesta
 
-            modelBuilder.Entity<ProductOrderUser>()
-                .HasOne<Order>()
+            modelBuilder.Entity<ProductPurchaseUser>()
+                .HasOne<Purchase>()
                 .WithMany() // Relación con Order
-                .HasForeignKey(po => po.OrderId);
+                .HasForeignKey(po => po.PurchaseId);
 
-            modelBuilder.Entity<ProductOrderUser>()
+            modelBuilder.Entity<ProductPurchaseUser>()
                 .HasOne<Product>()
                 .WithMany() // Relación con Product
                 .HasForeignKey(po => po.ProductId);
 
-            modelBuilder.Entity<ProductOrderUser>()
+            modelBuilder.Entity<ProductPurchaseUser>()
                 .HasOne<User>() // Relación con User
                 .WithMany() // Relación con User
                 .HasForeignKey(po => po.UserId);

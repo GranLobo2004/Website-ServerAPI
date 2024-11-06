@@ -16,7 +16,7 @@ internal sealed class UpdateProduct : Endpoint<ProductRequest, ProductResponse>
 
     public override void Configure()
     {
-        Post("/update/product");
+        Post("/product/update");
         AllowAnonymous();
         Validator<UpdateProductValidator>();
     }
