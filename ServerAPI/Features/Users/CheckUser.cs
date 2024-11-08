@@ -37,7 +37,13 @@ namespace ServerAPI.Features.Auth
             var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == user.Email);
             if (existingUser != null)
             {
-                await SendAsync(new UserResponse(false, "Email ya registrado"), 400, ct);
+                await SendAsync(new UserResponse(false, "Email registered"), 400, ct);
+                return;
+            }
+            existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Username == user.Username);
+            if (existingUser != null)
+            {
+                await SendAsync(new UserResponse(false, "Username registered"), 400, ct);
                 return;
             }
 
@@ -45,7 +51,7 @@ namespace ServerAPI.Features.Auth
             {
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync(ct);
-                await SendAsync(new UserResponse(true, "Usuario registrado correctamente"), 200, ct);
+                await SendAsync(new UserResponse(true, "User registered"), 200, ct);
             }
             catch (Exception ex)
             {

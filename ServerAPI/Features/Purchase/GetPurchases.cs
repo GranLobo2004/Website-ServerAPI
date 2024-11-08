@@ -5,13 +5,13 @@ using ServerAPI.Entities;
 
 namespace ServerAPI.Features.Order;
 
-public record OrdersRequest
+public record PurchaseRequest
 {
     public int CustomerId { get; init; }
     public int ProductId { get; init; }
 }
 
-public class GetPurchases: Endpoint<OrdersRequest, List<Entities.Purchase>>
+public class GetPurchases: Endpoint<PurchaseRequest, List<Purchase>>
 {
     private readonly DataBase _context;
 
@@ -26,13 +26,19 @@ public class GetPurchases: Endpoint<OrdersRequest, List<Entities.Purchase>>
         AllowAnonymous();
     }
 
-    public override async Task HandleAsync(OrdersRequest req, CancellationToken ct)
+    public override async Task HandleAsync(PurchaseRequest req, CancellationToken ct)
     {
         try
         {
-            Console.WriteLine(req.CustomerId);
+            Console.WriteLine(req.ProductId);
             List<ProductPurchaseUser> orders;
-            if (req.CustomerId == 0 || req.CustomerId == null)
+            if (req.ProductId == 0)
+            {
+                var adminResponse = await _context.Purchases.ToListAsync(ct);
+                await SendAsync(adminResponse, 200, ct);
+                orders = new List<ProductPurchaseUser>();
+            }
+            else if (req.CustomerId == 0 || req.CustomerId == null)
             {
                 Console.WriteLine("Producto");
                 orders = await _context.ProductPurchaseUsers.Where(o => o.ProductId == req.ProductId).ToListAsync(ct);
@@ -55,9 +61,9 @@ public class GetPurchases: Endpoint<OrdersRequest, List<Entities.Purchase>>
             
             for (int i = 0; i < orders.Count; i++)
             {
-                var order = await _context.Purchases.FirstOrDefaultAsync(o => o.Id == orders[i].PurchaseId, ct);
-                if (!set.Contains(order.Id))
+                if (!set.Contains(orders[i].PurchaseId))
                 {
+                    var order = await _context.Purchases.FirstOrDefaultAsync(o => o.Id == orders[i].PurchaseId, ct);
                     response.Add(order);
                     set.Add(order.Id);
                 }

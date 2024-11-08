@@ -43,7 +43,7 @@ public class CheckPurchase: Endpoint<CheckOrderRequest, CheckOrderResponse>
             {
                 Id = 0,
                 Total = req.Total,
-                State = "In progress",
+                State = "Pending Review",
                 Date = DateTime.Now,
             };
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == req.CustomerId);
